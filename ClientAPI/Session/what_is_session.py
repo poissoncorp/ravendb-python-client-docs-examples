@@ -1,13 +1,9 @@
 from ravendb.infrastructure.orders import Company
-
 from examples_base import ExamplesBase
 
 
 class WhatIsSession(ExamplesBase):
-    def __init__(self):
-        super().__init__()
-
-    def samples(self):
+    def test_samples(self):
         with self.embedded_server.get_document_store("WhatIsSession") as store:
             # A client-side copy of the document ID.
             company_id = None
