@@ -5,7 +5,7 @@ from ravendb.infrastructure.orders import Employee
 from examples_base import ExamplesBase
 
 
-class OpeningSession(ExamplesBase):
+class StoringEntities(ExamplesBase):
     def setUp(self):
         super().setUp()
 
