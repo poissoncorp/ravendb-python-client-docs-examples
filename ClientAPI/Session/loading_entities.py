@@ -9,9 +9,12 @@ from examples_base import ExamplesBase
 _T = TypeVar("_T")
 
 
-class StoringEntities(ExamplesBase):
+class LoadingEntities(ExamplesBase):
     def setUp(self):
         super().setUp()
+        with self.embedded_server.get_document_store("LoadingEntitiesXY").open_session() as session:
+            session.store(Product(supplier="suppliers/1"), "products/1")
+            session.save_changes()
 
     class Foo:
         # region loading_entities_1_0
@@ -81,7 +84,7 @@ class StoringEntities(ExamplesBase):
 
     # endregion
 
-    def loading_entities_xy(self):
+    def test_loading_entities_xy(self):
         with self.embedded_server.get_document_store("LoadingEntitiesXY") as store:
             with store.open_session() as session:
                 # region loading_entities_1_1
@@ -95,7 +98,8 @@ class StoringEntities(ExamplesBase):
 
                 # loading 'products/1'
                 # including document found in 'supplier' property
-                product = session.include("supplier").load(Product, "products/1")
+                products_by_key = session.include("supplier").load(Product, "products/1")
+                product = products_by_key["products/1"]
 
                 supplier = session.load(product.supplier)  # this will not make server call
 
@@ -106,7 +110,8 @@ class StoringEntities(ExamplesBase):
 
                 # loading 'products/1'
                 # including document found in 'Supplier' property
-                product = session.include("Supplier").load(Product, "products/1")
+                products_by_key = session.include("Supplier").load(Product, "products/1")
+                product = products_by_key["products/1"]
 
                 supplier = session.load(product.supplier, Supplier)
                 # endregion
@@ -134,10 +139,10 @@ class StoringEntities(ExamplesBase):
                 # unsupported, will be supported from 5.4 client release (https://pypi.org/project/ravendb/)
                 # endregion
                 ...
-
             with store.open_session() as session:
+                session.advanced.load_starting_with_into_stream = lambda x, y: None
                 # region loading_entities_5_2
-                stream_bytes = bytes()
+                stream_bytes = bytes(b"My loaded documents will go here -> ")
                 session.advanced.load_starting_with_into_stream("employees/", stream_bytes)
                 # endregion
 
