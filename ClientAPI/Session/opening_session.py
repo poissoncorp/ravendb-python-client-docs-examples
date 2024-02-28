@@ -155,4 +155,4 @@ class OpeningSession(ExamplesBase):
                     employee2.first_name = "Alice"  # Entity is now tracked
 
                     session.save_changes()  # Only employee2 is persisted
-            #endregion
+            # endregion

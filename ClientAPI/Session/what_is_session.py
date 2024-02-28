@@ -8,7 +8,7 @@ class WhatIsSession(ExamplesBase):
             # A client-side copy of the document ID.
             company_id = "companies/1-A"
 
-            #region session_usage_1
+            # region session_usage_1
             with store.open_session() as session:
                 # Create a new entity
                 entity = Company(name="CompanyName")
@@ -22,9 +22,9 @@ class WhatIsSession(ExamplesBase):
                 # At this point the entity is persisted to the database as a new document.
                 # Since no database was specified when opening the Session, the Default Database is used.
 
-            #endregion
+            # endregion
 
-            #region session_usage_2
+            # region session_usage_2
             # Open a session
             with store.open_session() as session:
                 # Load an existing document to the Session using its ID
@@ -36,10 +36,10 @@ class WhatIsSession(ExamplesBase):
 
                 session.save_changes()
                 # At this point, the change made is persisted to the existing document in the database
-            #endregion
+            # endregion
 
             with store.open_session() as session:
-                #region session_usage_3
+                # region session_usage_3
                 # A document is fetched from the server
                 entity1 = session.load(company_id, Company)
 
@@ -48,4 +48,4 @@ class WhatIsSession(ExamplesBase):
 
                 # This command will not throw an exception
                 self.assertEqual(entity1, entity2)
-                #endregion
+                # endregion
