@@ -1,6 +1,6 @@
 from typing import Optional, Union, Dict, Callable, Type, List, TypeVar
 
-from ravendb import DocumentSession, IncludeBuilder, LoaderWithInclude, ConditionalLoadResult
+from ravendb import IncludeBuilder, LoaderWithInclude, ConditionalLoadResult
 from ravendb.infrastructure.entities import User
 from ravendb.infrastructure.orders import Employee, Product, Supplier
 
