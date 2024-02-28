@@ -6,7 +6,6 @@ from ravendb import (
     TransactionMode,
     DocumentSession,
     CreateDatabaseOperation,
-    InMemoryDocumentSessionOperations,
 )
 from ravendb import DocumentStore as DocumentStoreReal
 from ravendb.documents.conventions import DocumentConventions, ShouldIgnoreEntityChanges
