@@ -40,33 +40,38 @@ class HowToQuery(ExamplesBase):
                 # endregion
 
             with store.open_session() as session:
-                # region query_2_1
-                # Query collection by document ID
-                # No auto-index is created when querying only by ID￥
+                try:
+                    # region query_2_1
+                    # Query collection by document ID
+                    # No auto-index is created when querying only by ID￥
 
-                employee = (
-                    session.query(object_type=Employee)
-                    .where_equals("Id", "employees/1-A")  # Query for specific document from 'Employees' collection
-                    .first()  # Execute the query
-                )
+                    employee = (
+                        session.query(object_type=Employee)
+                        .where_equals("Id", "employees/1-A")  # Query for specific document from 'Employees' collection
+                        .first()  # Execute the query
+                    )
 
-                # The resulting 'Employee' entity is loaded and will be tracked by the session
-                # endregion
+                    # The resulting 'Employee' entity is loaded and will be tracked by the session
+                    # endregion
+                except IndexError as e:
+                    pass  # no results
 
             with store.open_session() as session:
-                # region query_2_3
-                # Query collection by document ID
-                # No auto-index is created when querying only by ID
+                try:
+                    # region query_2_3
+                    # Query collection by document ID
+                    # No auto-index is created when querying only by ID
 
-                # Query for specific document from 'Employees' collection
-                query = session.query(object_type=Employee).where_equals("Id", "employees/1-A")
+                    # Query for specific document from 'Employees' collection
+                    query = session.query(object_type=Employee).where_equals("Id", "employees/1-A")
 
-                # Execute the query
-                employee_result = query.first()
+                    # Execute the query
+                    employee_result = query.first()
 
-                # The resulting 'Employee' entity is loaded and will be tracked by the session
-                # endregion
-
+                    # The resulting 'Employee' entity is loaded and will be tracked by the session
+                    # endregion
+                except IndexError as e:
+                    pass  # no results
             with store.open_session() as session:
                 # region query_3_1
                 # Query collection - filter by document field
