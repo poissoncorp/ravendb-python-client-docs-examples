@@ -1,11 +1,5 @@
-from typing import Type, Optional, TypeVar
-
 from ravendb import SessionOptions, TransactionMode
-from ravendb.infrastructure.orders import Employee, Product
 from examples_base import ExamplesBase
-
-_T = TypeVar("_T")
-_TIndex = TypeVar("_TIndex")
 
 
 class HowToQuery(ExamplesBase):
@@ -23,5 +17,5 @@ class HowToQuery(ExamplesBase):
                     #   * Explicitly set TransactionMode.SINGLE_NODE
                 )
             ) as session:
-            # endregion
+                # endregion
                 ...
