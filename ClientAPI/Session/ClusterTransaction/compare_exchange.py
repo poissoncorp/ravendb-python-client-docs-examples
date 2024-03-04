@@ -38,7 +38,7 @@ class HowToQuery(ExamplesBase):
                 # endregion
 
                 # region methods_2_sync
-                session.advanced.cluster_transaction.get_compare_exchange_values(keys, str)
+                session.advanced.cluster_transaction.get_compare_exchange_values(keys)
                 # endregion
 
                 # region methods_3_sync
