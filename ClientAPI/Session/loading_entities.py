@@ -141,7 +141,6 @@ class LoadingEntities(ExamplesBase):
                 # endregion
                 ...
             with store.open_session() as session:
-                session.advanced.load_starting_with_into_stream = lambda x, y: None
                 # region loading_entities_5_2
                 results_bytes = session.advanced.load_starting_with_into_stream("employees/")
                 # endregion
