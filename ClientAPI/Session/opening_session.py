@@ -67,8 +67,7 @@ class OpeningSession(ExamplesBase):
         # Passing no optional arguments opens a session for the default database configured in DocumentStore.database
         def open_session(
             self, database: Optional[str] = None, session_options: Optional[SessionOptions] = None
-        ) -> DocumentSession:
-            ...
+        ) -> DocumentSession: ...
 
         # endregion
 

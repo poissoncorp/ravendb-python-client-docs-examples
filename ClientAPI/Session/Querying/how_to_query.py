@@ -167,16 +167,13 @@ class HowToQuery(ExamplesBase):
 
             def query(
                 self, source: Optional[Query] = None, object_type: Optional[Type[_T]] = None
-            ) -> DocumentQuery[_T]:
-                ...
+            ) -> DocumentQuery[_T]: ...
 
             def query_collection(
                 self, collection_name: str, object_type: Optional[Type[_T]] = None
-            ) -> DocumentQuery[_T]:
-                ...
+            ) -> DocumentQuery[_T]: ...
 
-            def query_index(self, index_name: str, object_type: Optional[Type[_T]] = None) -> DocumentQuery[_T]:
-                ...
+            def query_index(self, index_name: str, object_type: Optional[Type[_T]] = None) -> DocumentQuery[_T]: ...
 
             def document_query(
                 self,
@@ -184,24 +181,20 @@ class HowToQuery(ExamplesBase):
                 collection_name: str = None,
                 object_type: Type[_T] = None,
                 is_map_reduce: bool = False,
-            ) -> DocumentQuery[_T]:
-                ...
+            ) -> DocumentQuery[_T]: ...
 
             # Overloads for querying an index:
             # ================================
             def query_index_type(
                 self, index_type: Type[_TIndex], object_type: Optional[Type[_T]] = None
-            ) -> DocumentQuery[_T]:
-                ...
+            ) -> DocumentQuery[_T]: ...
 
             def document_query_from_index_type(
                 self, index_type: Type[_TIndex], object_type: Type[_T]
-            ) -> DocumentQuery[_T]:
-                ...
+            ) -> DocumentQuery[_T]: ...
 
             # RawQuery
             # ================================
-            def raw_query(self, query: str, object_type: Optional[Type[_T]] = None) -> RawDocumentQuery[_T]:
-                ...
+            def raw_query(self, query: str, object_type: Optional[Type[_T]] = None) -> RawDocumentQuery[_T]: ...
 
             # endregion

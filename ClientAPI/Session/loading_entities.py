@@ -23,13 +23,11 @@ class LoadingEntities(ExamplesBase):
             key_or_keys: Union[List[str], str],
             object_type: Optional[Type[_T]] = None,
             includes: Callable[[IncludeBuilder], None] = None,
-        ) -> Union[Dict[str, _T], _T]:
-            ...
+        ) -> Union[Dict[str, _T], _T]: ...
 
         # endregion
         # region loading_entities_2_0
-        def include(self, path: str) -> LoaderWithInclude:
-            ...
+        def include(self, path: str) -> LoaderWithInclude: ...
 
         # endregion
 
@@ -39,8 +37,7 @@ class LoadingEntities(ExamplesBase):
             key_or_keys: Union[List[str], str],  # <- List of ids
             object_type: Optional[Type[_T]] = None,
             includes: Callable[[IncludeBuilder], None] = None,
-        ) -> Union[Dict[str, _T], _T]:
-            ...
+        ) -> Union[Dict[str, _T], _T]: ...
 
         # endregion
         # region loading_entities_4_0
@@ -53,8 +50,7 @@ class LoadingEntities(ExamplesBase):
             page_size: Optional[int] = None,
             exclude: Optional[str] = None,
             start_after: Optional[str] = None,
-        ) -> List[_T]:
-            ...
+        ) -> List[_T]: ...
 
         def load_starting_with_into_stream(
             self,
@@ -64,24 +60,21 @@ class LoadingEntities(ExamplesBase):
             page_size: int = 25,
             exclude: str = None,
             start_after: str = None,
-        ) -> bytes:
-            ...
+        ) -> bytes: ...
 
     # endregion
     # region loading_entities_5_0
     # waiting for merge, will be supported from 5.4 client release (https://pypi.org/project/ravendb/)
     # endregion
     # region loading_entities_6_0
-    def is_loaded(self, key: str) -> bool:
-        ...
+    def is_loaded(self, key: str) -> bool: ...
 
     # endregion
 
     # region loading_entities_7_0
     def conditional_load(
         self, key: str, change_vector: str, object_type: Optional[Type[_T]] = None
-    ) -> ConditionalLoadResult[_T]:
-        ...
+    ) -> ConditionalLoadResult[_T]: ...
 
     # endregion
 

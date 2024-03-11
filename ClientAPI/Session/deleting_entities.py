@@ -16,8 +16,7 @@ class DeletingEntities(ExamplesBase):
 
     class Foo:
         # region deleting_1
-        def delete(self, key_or_entity: Union[str, object], expected_change_vector: Optional[str] = None) -> None:
-            ...
+        def delete(self, key_or_entity: Union[str, object], expected_change_vector: Optional[str] = None) -> None: ...
 
         # endregion
 

@@ -14,8 +14,7 @@ class StoringEntities(ExamplesBase):
 
     class Interface:
         # region saving_changes_1
-        def save_changes(self) -> None:
-            ...
+        def save_changes(self) -> None: ...
 
         # endregion
 

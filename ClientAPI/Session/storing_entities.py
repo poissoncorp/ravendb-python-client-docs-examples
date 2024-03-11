@@ -11,8 +11,7 @@ class StoringEntities(ExamplesBase):
 
     class IFoo:
         # region store_entities_1
-        def store(self, entity: object, key: Optional[str] = None, change_vector: Optional[str] = None) -> None:
-            ...
+        def store(self, entity: object, key: Optional[str] = None, change_vector: Optional[str] = None) -> None: ...
 
         # endregion
 
