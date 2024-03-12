@@ -28,6 +28,7 @@ class TestHowToQuery(ExamplesBase):
                     pass
 
             with store.open_session() as session:
+                # region documentQuery_3
                 # Query collection - filter by document field
                 employees = list(
                     session.advanced.document_query(object_type=Employee).where_equals("first_name", "Robert")
