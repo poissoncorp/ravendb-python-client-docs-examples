@@ -2,10 +2,10 @@ from ravendb import DocumentStore
 from ravendb.infrastructure.orders import Company, Address
 from ravendb.serverwide.database_record import DatabaseRecord
 from ravendb.serverwide.operations.common import DeleteDatabaseOperation, CreateDatabaseOperation
-from examples_base import ExamplesBase
+from examples_base import ExampleBase
 
 
-class StoringEntities(ExamplesBase):
+class StoringEntities(ExampleBase):
     def setUp(self):
         super().setUp()
 

@@ -5,10 +5,10 @@ from ravendb import InMemoryDocumentSessionOperations, SessionOptions, Transacti
 from ravendb.infrastructure.orders import Employee
 
 from ClientAPI.Session.opening_session import DocumentStoreFake
-from examples_base import ExamplesBase
+from examples_base import ExampleBase
 
 
-class StoringEntities(ExamplesBase):
+class StoringEntities(ExampleBase):
     def setUp(self):
         super().setUp()
 

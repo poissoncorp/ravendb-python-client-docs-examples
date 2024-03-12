@@ -3,12 +3,12 @@ from typing import Callable, TypeVar
 from ravendb import DocumentQuery, QueryStatistics
 from ravendb.infrastructure.orders import Employee
 
-from examples_base import ExamplesBase
+from examples_base import ExampleBase
 
 _T = TypeVar("_T")
 
 
-class GetQueryStatistics(ExamplesBase):
+class GetQueryStatistics(ExampleBase):
     def setUp(self):
         super().setUp()
 

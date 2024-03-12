@@ -12,7 +12,7 @@ from ravendb.documents.conventions import DocumentConventions, ShouldIgnoreEntit
 from ravendb.infrastructure.orders import Employee
 from ravendb.serverwide.database_record import DatabaseRecord
 
-from examples_base import ExamplesBase
+from examples_base import ExampleBase
 
 
 class DocumentStoreFake(DocumentStoreReal):
@@ -35,7 +35,7 @@ class DocumentStoreFakeUninitialized(DocumentStoreReal):
         super().__init__("http://127.0.0.1:8080", "OpeningSession")
 
 
-class OpeningSession(ExamplesBase):
+class OpeningSession(ExampleBase):
     def setUp(self):
         super().setUp()
 

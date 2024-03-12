@@ -7,12 +7,12 @@ from ravendb import IndexQuery, QueryResult, AbstractIndexCreationTask, Projecti
 from ravendb.documents.indexes.definitions import FieldStorage
 from ravendb.infrastructure.orders import Employee
 
-from examples_base import ExamplesBase
+from examples_base import ExampleBase
 
 _T = TypeVar("_T")
 
 
-class HowToCustomize(ExamplesBase):
+class HowToCustomize(ExampleBase):
     def setUp(self):
         super().setUp()
         with self.embedded_server.get_document_store("CustomizeQuery") as store:

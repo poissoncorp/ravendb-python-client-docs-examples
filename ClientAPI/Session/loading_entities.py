@@ -4,12 +4,12 @@ from ravendb import IncludeBuilder, LoaderWithInclude, ConditionalLoadResult
 from ravendb.infrastructure.entities import User
 from ravendb.infrastructure.orders import Employee, Product, Supplier
 
-from examples_base import ExamplesBase
+from examples_base import ExampleBase
 
 _T = TypeVar("_T")
 
 
-class LoadingEntities(ExamplesBase):
+class LoadingEntities(ExampleBase):
     def setUp(self):
         super().setUp()
         with self.embedded_server.get_document_store("LoadingEntitiesXY").open_session() as session:

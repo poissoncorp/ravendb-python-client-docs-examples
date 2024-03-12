@@ -1,8 +1,8 @@
 from ravendb.infrastructure.orders import Company
-from examples_base import ExamplesBase
+from examples_base import ExampleBase
 
 
-class WhatIsSession(ExamplesBase):
+class WhatIsSession(ExampleBase):
     def test_samples(self):
         with self.embedded_server.get_document_store("WhatIsSession") as store:
             # A client-side copy of the document ID.

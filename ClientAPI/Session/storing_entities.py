@@ -2,10 +2,10 @@ from typing import Optional
 
 from ravendb.infrastructure.orders import Employee
 
-from examples_base import ExamplesBase
+from examples_base import ExampleBase
 
 
-class StoringEntities(ExamplesBase):
+class StoringEntities(ExampleBase):
     def setUp(self):
         super().setUp()
 

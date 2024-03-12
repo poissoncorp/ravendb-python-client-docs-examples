@@ -1,8 +1,8 @@
 from ravendb import SessionOptions, TransactionMode
-from examples_base import ExamplesBase
+from examples_base import ExampleBase
 
 
-class HowToQuery(ExamplesBase):
+class HowToQuery(ExampleBase):
     def setUp(self):
         super().setUp()
 

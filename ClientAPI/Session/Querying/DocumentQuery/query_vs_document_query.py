@@ -1,6 +1,6 @@
 from ravendb import QueryOperator
 
-from examples_base import ExamplesBase
+from examples_base import ExampleBase
 
 
 class User:
@@ -11,7 +11,7 @@ class User:
         self.age = age
 
 
-class LoadingEntities(ExamplesBase):
+class LoadingEntities(ExampleBase):
     def setUp(self):
         super().setUp()
 

@@ -1,9 +1,9 @@
 from ravendb.infrastructure.orders import Order
 
-from examples_base import ExamplesBase
+from examples_base import ExampleBase
 
 
-class CountQueryResults(ExamplesBase):
+class CountQueryResults(ExampleBase):
     def setUp(self):
         super().setUp()
 

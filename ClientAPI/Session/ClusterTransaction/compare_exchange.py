@@ -1,8 +1,8 @@
 from ravendb import SessionOptions, TransactionMode
-from examples_base import ExamplesBase
+from examples_base import ExampleBase
 
 
-class HowToQuery(ExamplesBase):
+class HowToQuery(ExampleBase):
     class DNS:
         def __init__(self, ip_address: str = None):
             ip_address = ip_address

@@ -3,10 +3,10 @@ from typing import Optional, Union
 from ravendb.documents.commands.batches import DeleteCommandData
 from ravendb.infrastructure.orders import Employee
 
-from examples_base import ExamplesBase
+from examples_base import ExampleBase
 
 
-class DeletingEntities(ExamplesBase):
+class DeletingEntities(ExampleBase):
     def setUp(self):
         super().setUp()
         with self.embedded_server.get_document_store("DeletingEntities") as store:

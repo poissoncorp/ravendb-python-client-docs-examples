@@ -3,13 +3,13 @@ from typing import Type, Optional, TypeVar
 from ravendb import DocumentQuery, RawDocumentQuery
 from ravendb.documents.queries.misc import Query
 from ravendb.infrastructure.orders import Employee, Product
-from examples_base import ExamplesBase
+from examples_base import ExampleBase
 
 _T = TypeVar("_T")
 _TIndex = TypeVar("_TIndex")
 
 
-class HowToQuery(ExamplesBase):
+class HowToQuery(ExampleBase):
     def setUp(self):
         super().setUp()
 

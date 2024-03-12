@@ -1,9 +1,9 @@
 from ravendb.infrastructure.orders import Employee, Product, Order, Company
 
-from examples_base import ExamplesBase
+from examples_base import ExampleBase
 
 
-class TestHowToQuery(ExamplesBase):
+class TestHowToQuery(ExampleBase):
     def setUp(self):
         super().setUp()
 

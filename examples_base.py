@@ -3,7 +3,7 @@ from unittest import TestCase
 from ravendb_embedded import EmbeddedServer, ServerOptions
 
 
-class ExamplesBase(TestCase):
+class ExampleBase(TestCase):
     def setUp(self):
         self.embedded_server_port = 8080
         self.embedded_server = EmbeddedServer()
