@@ -15,11 +15,13 @@ _T = TypeVar("_T")
 class HowToCustomize(ExamplesBase):
     def setUp(self):
         super().setUp()
+        with self.embedded_server.get_document_store("CustomizeQuery") as store:
+            Employees_ByFullName().execute(store)
 
     def test_how_to_customize_examples(self):
         logger = logging.Logger("")
 
-        with self.embedded_server.get_document_store() as store:
+        with self.embedded_server.get_document_store("CustomizeQuery") as store:
             with store.open_session() as session:
                 # region customize_1_1
 
@@ -177,7 +179,7 @@ class HowToCustomize(ExamplesBase):
                     session.query_index_type(Employees_ByFullName, Employees_ByFullName.IndexEntry)
                     # Pass the requested projection behavior to the 'select_fields' method
                     # and specify the field that will be returned to the projection
-                    .select_fields(Employee, "full_name", ProjectionBehavior.FROM_DOCUMENT_OR_THROW)
+                    .select_fields(Employee, "full_name", projection_behavior=ProjectionBehavior.FROM_DOCUMENT_OR_THROW)
                 )
                 # endregion
 
@@ -187,22 +189,25 @@ class HowToCustomize(ExamplesBase):
                     session.advanced.document_query("Employees/ByFullName", object_type=Employee)
                     # Pass the requested projection behavior to the 'select_fields' method
                     # and specify the field that will be returned to the projection
-                    .select_fields(Employee, "full_name", ProjectionBehavior.FROM_DOCUMENT_OR_THROW)
+                    .select_fields(Employee, "full_name", projection_behavior=ProjectionBehavior.FROM_DOCUMENT_OR_THROW)
                 )
                 # endregion
 
             with store.open_session() as session:
-                # region customize_6_4
-                results = list(
-                    session.advanced
-                    # Define an RQL query that returns a projection
-                    .raw_query("from index 'Employees/ByFullName' select full_name", Employee)
-                    # Pass the requested projection behavior to the 'projection' method
-                    # WARNING: Not implemented yet!
-                    # https://issues.hibernatingrhinos.com/issue/RDBC-817/Implement-query.projection
-                    .projection(ProjectionBehavior.FROM_DOCUMENT_OR_THROW)
-                )
-                # endregion
+                try:
+                    # region customize_6_4
+                    results = list(
+                        session.advanced
+                        # Define an RQL query that returns a projection
+                        .raw_query("from index 'Employees/ByFullName' select full_name", Employee)
+                        # Pass the requested projection behavior to the 'projection' method
+                        # WARNING: Not implemented yet!
+                        # https://issues.hibernatingrhinos.com/issue/RDBC-817/Implement-query.projection
+                        .projection(ProjectionBehavior.FROM_DOCUMENT_OR_THROW)
+                    )
+                    # endregion
+                except NotImplementedError as e:
+                    pass
 
             with store.open_session() as session:
                 # region customize_7_1
@@ -227,7 +232,7 @@ class HowToCustomize(ExamplesBase):
                 results = list(
                     session.advanced
                     # Define an RQL query that orders the results randomly
-                    .raw_query("from 'Employees' order by random()", Employee).random_ordering()
+                    .raw_query("from 'Employees' order by random()", Employee)
                 )
                 # endregion
 
@@ -261,7 +266,7 @@ class HowToCustomize(ExamplesBase):
             with store.open_session() as session:
                 # region customize_9_1
                 def __timings_callback(timings: QueryTimings):
-                    logger.log(timings.duration_in_ms)
+                    logger.log(logging.DEBUG, timings.duration_in_ms)
 
                 results = list(
                     session.query(object_type=Employee).where_equals("first_name", "Robert")
@@ -274,7 +279,7 @@ class HowToCustomize(ExamplesBase):
             with store.open_session() as session:
                 # region customize_9_3
                 def __timings_callback(timings: QueryTimings):
-                    logger.log(timings.duration_in_ms)
+                    logger.log(logging.DEBUG, timings.duration_in_ms)
 
                 results = list(
                     session.advanced.document_query(object_type=Employee).where_equals("first_name", "Robert")
@@ -287,12 +292,10 @@ class HowToCustomize(ExamplesBase):
             with store.open_session() as session:
                 # region customize_9_4
                 def __timings_callback(timings: QueryTimings):
-                    logger.log(timings.duration_in_ms)
+                    logger.log(logging.DEBUG, timings.duration_in_ms)
 
                 results = list(
-                    session.advanced.raw_query("from 'Employees' where first_name == 'Robert'").where_equals(
-                        "first_name", "Robert"
-                    )
+                    session.advanced.raw_query("from 'Employees' where first_name == 'Robert'")
                     # Call 'timings'.
                     # Provide a callback for the timings result - interact with QueryTimings inside the callback
                     .timings(__timings_callback)

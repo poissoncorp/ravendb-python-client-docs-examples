@@ -8,7 +8,7 @@ class CountQueryResults(ExamplesBase):
         super().setUp()
 
     def test_can_use_count(self):
-        with self.embedded_server.get_document_store() as store:
+        with self.embedded_server.get_document_store("CountQueryResult") as store:
             with store.open_session() as session:
                 # region count_3
                 number_of_orders = (

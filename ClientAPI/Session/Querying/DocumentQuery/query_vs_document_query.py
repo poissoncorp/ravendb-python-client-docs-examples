@@ -16,7 +16,7 @@ class LoadingEntities(ExamplesBase):
         super().setUp()
 
     def test_query_vs_document_query(self):
-        with self.embedded_server.get_document_store() as store:
+        with self.embedded_server.get_document_store("QueryVsDocumentQuery") as store:
             with store.open_session() as session:
                 # region immutable_query
                 query = session.query(object_type=User).where_starts_with("name", "A")

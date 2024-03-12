@@ -17,7 +17,7 @@ class GetQueryStatistics(ExamplesBase):
         def statistics(self, stats_callback: Callable[[QueryStatistics], None]) -> DocumentQuery[_T]: ...
 
     def test_get_query_statistics(self):
-        with self.embedded_server.get_document_store() as store:
+        with self.embedded_server.get_document_store("QueryStatistics") as store:
             with store.open_session() as session:
                 # region stats_2
                 def __statistics_callback(statistics: QueryStatistics) -> None:
