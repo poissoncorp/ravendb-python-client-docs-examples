@@ -57,6 +57,7 @@ class ExampleBase(TestCase):
                     OrderLine("products/3", "Grain", 2, 5000),
                     OrderLine("products/1", "iPhone 15", 1999.9, 500),
                 ],
+                freight=13.5,
             )
         )
         session.save_changes()
