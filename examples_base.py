@@ -1,9 +1,159 @@
+from __future__ import annotations
 from datetime import datetime, timedelta
+from typing import Any, Dict
 from unittest import TestCase
 from ravendb import DocumentSession
-from ravendb.infrastructure.orders import Order, Address, OrderLine, Company, Employee as RavenEmployee, Product
+from ravendb.infrastructure.orders import (
+    Order as RavenOrder,
+    Address as RavenAddress,
+    OrderLine as RavenOrderLine,
+    Company as RavenCompany,
+    Employee as RavenEmployee,
+    Product as RavenProduct,
+    Contact as RavenContact,
+)
 from ravendb.tools.utils import Utils
 from ravendb_embedded import EmbeddedServer, ServerOptions
+
+
+class Product(RavenProduct):
+    def to_json(self) -> Dict[str, Any]:
+        return {
+            "Id": self.Id,
+            "Name": self.name,
+            "Supplier": self.supplier,
+            "Category": self.category,
+            "QuantityPerUnit": self.quantity_per_unit,
+            "PricePerUnit": self.price_per_unit,
+            "UnitsInStock": self.units_in_stock,
+            "UnitsOnOrder": self.units_on_order,
+            "Discontinued": self.discontinued,
+            "ReorderLevel": self.reorder_level,
+        }
+
+    @classmethod
+    def from_json(cls, json_dict: Dict[str, Any]) -> Product:
+        return cls(
+            json_dict["Id"],
+            json_dict["Name"],
+            json_dict["Supplier"],
+            json_dict["Category"],
+            json_dict["QuantityPerUnit"],
+            json_dict["PricePerUnit"],
+            json_dict["UnitsInStock"],
+            json_dict["UnitsOnOrder"],
+            json_dict["Discontinued"],
+            json_dict["ReorderLevel"],
+        )
+
+
+class Contact(RavenContact):
+    def to_json(self) -> Dict[str, Any]:
+        return {"Name": self.name, "Title": self.title}
+
+    @classmethod
+    def from_json(cls, json_dict: Dict[str, Any]) -> Contact:
+        return cls(json_dict["Name"], json_dict["Title"])
+
+
+class Company(RavenCompany):
+    def to_json(self) -> Dict[str, Any]:
+        return {
+            "Id": self.Id,
+            "ExternalId": self.external_id,
+            "Name": self.name,
+            "Contact": self.contact.to_json() if self.contact else None,
+            "Address": self.address.to_json() if self.address else None,
+            "Phone": self.phone,
+            "Fax": self.fax,
+        }
+
+    @classmethod
+    def from_json(cls, json_dict: Dict[str, Any]) -> Company:
+        return cls(
+            json_dict["Id"],
+            json_dict["ExternalId"],
+            json_dict["Name"],
+            Contact.from_json(json_dict["Contact"]),
+            Address.from_json(json_dict["Address"]),
+            json_dict["Phone"],
+            json_dict["Fax"],
+        )
+
+
+class OrderLine(RavenOrderLine):
+    def to_json(self) -> Dict[str, Any]:
+        return {
+            "Product": self.product,
+            "ProductName": self.product_name,
+            "PricePerUnit": self.price_per_unit,
+            "Quantity": self.quantity,
+            "Discount": self.discount,
+        }
+
+    @classmethod
+    def from_json(cls, json_dict: Dict[str, Any]) -> OrderLine:
+        return cls(
+            json_dict["Product"],
+            json_dict["ProductName"],
+            json_dict["PricePerUnit"],
+            json_dict["Quantity"],
+            json_dict["Discount"],
+        )
+
+
+class Order(RavenOrder):
+    def to_json(self) -> Dict[str, Any]:
+        return {
+            "Key": self.key,
+            "Company": self.company,
+            "Employee": self.employee,
+            "OrderedAt": Utils.datetime_to_string(self.ordered_at),
+            "RequireAt": Utils.datetime_to_string(self.require_at),
+            "ShippedAt": Utils.datetime_to_string(self.shipped_at),
+            "ShipTo": self.ship_to.to_json() if self.ship_to is not None else None,
+            "ShipVia": self.ship_via,
+            "Freight": self.freight,
+            "Lines": [line.to_json() for line in self.lines],
+        }
+
+    @classmethod
+    def from_json(cls, json_dict: Dict[str, Any]) -> Order:
+        return cls(
+            json_dict["Key"],
+            json_dict["Company"],
+            json_dict["Employee"],
+            Utils.string_to_datetime(json_dict["OrderedAt"]),
+            Utils.string_to_datetime(json_dict["RequireAt"]),
+            Utils.string_to_datetime(json_dict["ShippedAt"]),
+            Address.from_json(json_dict["ShipTo"]),
+            json_dict["ShipVia"],
+            json_dict["Freight"],
+            [OrderLine.from_json(line) for line in json_dict["Lines"]],
+        )
+
+
+class Address(RavenAddress):
+    def to_json(self) -> Dict[str, Any]:
+        return {
+            "Line1": self.line1,
+            "Line2": self.line2,
+            "City": self.city,
+            "Region": self.region,
+            "PostalCode": self.postal_code,
+            "Country": self.country,
+        }
+
+    @classmethod
+    def from_json(cls, json: Dict[str, Any]) -> Address:
+        return cls(
+            json["Line1"],
+            json["Line2"],
+            json["City"],
+            json["Region"],
+            json["PostalCode"],
+            json["Country"],
+        )
 
 
 class Employee(RavenEmployee):
@@ -22,6 +172,23 @@ class Employee(RavenEmployee):
             "notes": self.notes,
             "territories": self.territories,
         }
+
+    @classmethod
+    def from_json(cls, json_dict: Dict[str, Any]):
+        return cls(
+            json_dict["Id"],
+            json_dict["LastName"],
+            json_dict["FirstName"],
+            json_dict["Title"],
+            Address.from_json(json_dict["Address"]),
+            Utils.string_to_datetime(json_dict["HiredAt"]),
+            Utils.string_to_datetime(json_dict["Birthday"]),
+            json_dict["HomePhone"],
+            json_dict["Extension"],
+            json_dict["ReportsTo"],
+            json_dict["Notes"],
+            json_dict["Territories"],
+        )
 
 
 class ExampleBase(TestCase):
