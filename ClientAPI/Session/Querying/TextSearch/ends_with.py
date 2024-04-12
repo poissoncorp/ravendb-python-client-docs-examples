@@ -21,7 +21,7 @@ class EndsWith(ExampleBase):
                 # endregion
 
             with store.open_session() as session:
-                # region startsWith_4
+                # region endsWith_4
                 products = list(
                     session.query(object_type=Product)
                     # Pass 'exact=True' to search for an EXACT postfix match
@@ -33,7 +33,7 @@ class EndsWith(ExampleBase):
                 # endregion
 
             with store.open_session() as session:
-                # region startsWith_7
+                # region endsWith_7
                 products = list(
                     session.query(object_type=Product)
                     # Negate next statement
