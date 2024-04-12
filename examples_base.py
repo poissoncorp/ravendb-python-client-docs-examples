@@ -160,17 +160,17 @@ class Employee(RavenEmployee):
     def to_json(self):
         return {
             "Id": self.Id,
-            "last_name": self.last_name,
-            "first_name": self.first_name,
-            "title": self.title,
-            "address": self.address,
-            "hired_at": Utils.datetime_to_string(self.hired_at),
-            "birthday": Utils.datetime_to_string(self.birthday),
-            "home_phone": self.home_phone,
-            "extension": self.extension,
-            "reports_to": self.reports_to,
-            "notes": self.notes,
-            "territories": self.territories,
+            "LastName": self.last_name,
+            "FirstName": self.first_name,
+            "Title": self.title,
+            "Address": self.address,
+            "HiredAt": Utils.datetime_to_string(self.hired_at),
+            "Birthday": Utils.datetime_to_string(self.birthday),
+            "HomePhone": self.home_phone,
+            "Extension": self.extension,
+            "ReportsTo": self.reports_to,
+            "Notes": self.notes,
+            "Territories": self.territories,
         }
 
     @classmethod
