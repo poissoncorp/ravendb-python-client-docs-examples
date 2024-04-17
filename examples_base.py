@@ -11,6 +11,7 @@ from ravendb.infrastructure.orders import (
     Employee as RavenEmployee,
     Product as RavenProduct,
     Contact as RavenContact,
+    Category as RavenCategory,
 )
 from ravendb.tools.utils import Utils
 from ravendb_embedded import EmbeddedServer, ServerOptions
@@ -191,6 +192,23 @@ class Employee(RavenEmployee):
         )
 
 
+class Category(RavenCategory):
+    def to_json(self):
+        return {
+            "Id": self.Id,
+            "Name": self.name,
+            "Description": self.description,
+        }
+
+    @classmethod
+    def from_json(cls, json_dict: Dict[str, Any]):
+        return cls(
+            json_dict["Id"],
+            json_dict["Name"],
+            json_dict["Description"],
+        )
+
+
 class ExampleBase(TestCase):
     def setUp(self):
         self.embedded_server_port = 8080
@@ -199,6 +217,15 @@ class ExampleBase(TestCase):
         server_options.server_url = f"http://127.0.0.1:{self.embedded_server_port}"
         self.embedded_server.start_server(server_options)
         print(server_options.server_url)
+
+    @staticmethod
+    def add_categories(session: DocumentSession):
+        session.store(Category("categories/misc", name="My Category"))
+        session.store(Category("categories/kitchen", name="My Category2"))
+        session.store(Category("categories/aircraft", name="My Category3"))
+        session.store(Category("categories/automotive", name="My Category4"))
+        session.store(Category("categories/electronics", name="My Category5"))
+        session.save_changes()
 
     @staticmethod
     def add_orders(session: DocumentSession):
