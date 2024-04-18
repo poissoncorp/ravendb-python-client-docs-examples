@@ -35,7 +35,7 @@ class Product(RavenProduct):
     @classmethod
     def from_json(cls, json_dict: Dict[str, Any]) -> Product:
         return cls(
-            json_dict["Id"],
+            json_dict["Id"] if "Id" in json_dict else None,
             json_dict["Name"],
             json_dict["Supplier"],
             json_dict["Category"],
@@ -72,7 +72,7 @@ class Company(RavenCompany):
     @classmethod
     def from_json(cls, json_dict: Dict[str, Any]) -> Company:
         return cls(
-            json_dict["Id"],
+            json_dict["Id"] if "Id" in json_dict else None,
             json_dict["ExternalId"],
             json_dict["Name"],
             Contact.from_json(json_dict["Contact"]),
@@ -177,11 +177,11 @@ class Employee(RavenEmployee):
     @classmethod
     def from_json(cls, json_dict: Dict[str, Any]):
         return cls(
-            json_dict["Id"],
+            json_dict["Id"] if "Id" in json_dict else None,
             json_dict["LastName"],
             json_dict["FirstName"],
             json_dict["Title"],
-            Address.from_json(json_dict["Address"]),
+            Address.from_json(json_dict["Address"]) if json_dict["Address"] else None,
             Utils.string_to_datetime(json_dict["HiredAt"]),
             Utils.string_to_datetime(json_dict["Birthday"]),
             json_dict["HomePhone"],
@@ -203,7 +203,7 @@ class Category(RavenCategory):
     @classmethod
     def from_json(cls, json_dict: Dict[str, Any]):
         return cls(
-            json_dict["Id"],
+            json_dict["Id"] if "Id" in json_dict else None,
             json_dict["Name"],
             json_dict["Description"],
         )
