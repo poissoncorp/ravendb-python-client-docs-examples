@@ -1,3 +1,6 @@
+from enum import Enum
+from typing import Dict, List
+
 from ravendb import DocumentsChanges
 
 from examples_base import ExampleBase, Employee
@@ -86,3 +89,43 @@ class EntityChanges(ExampleBase):
 
                 session.save_changes()
             # endregion
+
+
+class Foo:
+    # region syntax_1
+    # has_changed
+    def has_changed(self, entity: object) -> bool: ...
+
+    # endregion
+    # region syntax_2
+    # todo reeb: what_changed_for definition remains unused in this example due to lack of it
+    # todo reeb: i've used what_changed instead - that's why i'm including its' definiton below
+    # region syntax_2
+    # what_changed
+    def what_changed(self) -> Dict[str, List[DocumentsChanges]]: ...
+
+    # endregion
+
+    # region syntax_3
+    class DocumentsChanges:
+
+        def __init__(
+            self,
+            field_old_value: object,
+            field_new_value: object,
+            change: DocumentsChanges.ChangeType,
+            field_name: str = None,
+            field_path: str = None,
+        ): ...
+
+        class ChangeType(Enum):
+            DOCUMENT_DELETED = "DocumentDeleted"
+            DOCUMENT_ADDED = "DocumentAdded"
+            FIELD_CHANGED = "FieldChanged"
+            NEW_FIELD = "NewField"
+            REMOVED_FIELD = "RemovedField"
+            ARRAY_VALUE_CHANGED = "ArrayValueChanged"
+            ARRAY_VALUE_ADDED = "ArrayValueAdded"
+            ARRAY_VALUE_REMOVED = "ArrayValueRemoved"
+
+    # endregion
