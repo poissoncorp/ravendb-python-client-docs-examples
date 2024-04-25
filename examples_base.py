@@ -2,7 +2,8 @@ from __future__ import annotations
 from datetime import datetime, timedelta
 from typing import Any, Dict
 from unittest import TestCase
-from ravendb import DocumentSession
+from ravendb import DocumentSession, DocumentStore, PutIndexesOperation, IndexDeploymentMode
+from ravendb.documents.indexes.definitions import IndexPriority, IndexDefinition
 from ravendb.infrastructure.orders import (
     Order as RavenOrder,
     Address as RavenAddress,
@@ -349,3 +350,33 @@ class ExampleBase(TestCase):
             )
         )
         session.save_changes()
+
+    @staticmethod
+    def add_index_orders_totals(store: DocumentStore):
+        index_definition = IndexDefinition(
+            # Name is mandatory, can use any string
+            name="Orders/Totals",
+            # Define the index map functions, string format
+            # A single string for a map-index, multiple strings for a multimap index
+            maps={
+                """
+                map('Orders', function(order) {
+                          return {
+                              Employee: order.Employee,
+                              Company: order.Company,
+                              Total: order.Lines.reduce(function(sum, l) {
+                                  return sum + (l.Quantity * l.PricePerUnit) * (1 - l.Discount);
+                              }, 0)
+                          };
+                    });
+                """
+            },
+            # reduce = ...,
+            # Can provide other index definitions available on the IndexDefinition class
+            # Override the default values, e.g.:
+            deployment_mode=IndexDeploymentMode.ROLLING,
+            priority=IndexPriority.HIGH,
+            configuration={"Indexing.IndexMissingFieldsAsNull": "true"},
+            # See all available properties in syntax below
+        )
+        store.maintenance.send(PutIndexesOperation(index_definition))
