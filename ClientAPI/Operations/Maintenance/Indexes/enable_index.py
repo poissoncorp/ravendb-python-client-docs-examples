@@ -42,4 +42,3 @@ class EnableIndex(ExampleBase):
             # At this point, the index is enabled on ALL nodes
             # New data will not be indexed
             # endregion
-
