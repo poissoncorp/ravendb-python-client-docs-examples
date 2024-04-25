@@ -6,8 +6,11 @@ from examples_base import ExampleBase
 
 
 class Foo:
+    # region syntax
     class StartIndexingOperation(VoidMaintenanceOperation):
         def __init__(self): ...
+
+    # endregion
 
 
 class ResumeIndexing(ExampleBase):
