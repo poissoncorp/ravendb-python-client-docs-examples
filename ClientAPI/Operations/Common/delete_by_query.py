@@ -1,4 +1,8 @@
+import datetime
+from typing import Union, Optional
+
 from ravendb import DeleteByQueryOperation, AbstractIndexCreationTask, IndexQuery, QueryOperationOptions
+from ravendb.documents.operations.definitions import IOperation, OperationIdResult
 
 from examples_base import ExampleBase
 
@@ -100,3 +104,43 @@ class DeleteByQuery(ExampleBase):
             details = result.details
             document_id_that_was_deleted = details[0]["Id"]
             # endregion
+
+    class Foo:
+        # region syntax_1
+        class DeleteByQueryOperation(IOperation[OperationIdResult]):
+            def __init__(
+                self, query_to_delete: Union[str, IndexQuery], options: Optional[QueryOperationOptions] = None
+            ): ...
+
+        # endregion
+
+        # todo reeb: it will change after RDBC-849
+        # region syntax_2
+
+        class QueryOperationOptions(object):
+            def __init__(
+                self,
+                allow_stale: bool = True,
+                stale_timeout: datetime.timedelta = None,
+                max_ops_per_sec: int = None,
+                retrieve_details: bool = False,
+            ):
+                # Indicates whether operations are allowed on stale indexes.
+                # DEFAULT: True
+                self.allow_stale = allow_stale
+
+                # If allow_stale is set to false and index is stale,
+                # then this is the maximum timeout to wait for index to become non-stale.
+                # If timeout is exceeded then exception is thrown.
+                # DEFAULT: None (if index is stale then exception is thrown immediately)
+                self.stale_timeout = stale_timeout
+
+                # Limits the number of base operations per second allowed.
+                # DEFAULT: no limit
+                self.max_ops_per_sec = max_ops_per_sec
+
+                # Determines whether operation details about each document should be returned by server.
+                # DEFAULT: False
+                self.retrieve_details = retrieve_details
+
+        # endregion
