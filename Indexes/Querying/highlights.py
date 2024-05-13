@@ -18,7 +18,7 @@ class Employees_ByNotes(AbstractIndexCreationTask):
 
     def __init__(self):
         super().__init__()
-        self.map = "from employee in employees select new { employee_notes = employee.notes[0] }"
+        self.map = "from employee in docs.Employees select new { employee_notes = employee.notes[0] }"
 
         # Configure index-field 'employee_notes' for highlighting:
         # ========================================================
@@ -43,7 +43,7 @@ class ContactDetailsPerCountry(AbstractIndexCreationTask):
     def __init__(self):
         super().__init__()
         # The 'map' function defines what will be indexed from each document in the collection
-        self.map = "from company in companies select new { country = company.Address.Country, contact_details = company.Contact.Name + ' ' + company.Contact.Title }"
+        self.map = "from company in docs.Companies select new { country = company.Address.Country, contact_details = company.Contact.Name + ' ' + company.Contact.Title }"
 
         # The 'reduce' function specifies how data is grouped and aggregated
 
