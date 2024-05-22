@@ -256,6 +256,15 @@ class FacetsBasics(ExampleBase):
             self.assertEqual(3, facet_value.count_)
             # endregion
 
+            # region facets_8
+            filtered_results = list(
+                session.query_index_type(Cameras_ByFeatures, Cameras_ByFeatures.IndexEntry)
+                .where_in("brand", ["Fuji", "Nikon"])
+                .aggregate_by_facets(facets)
+                .execute()
+            )
+            # endregion
+
             # region facets_9
             # Define the list of facets to query by:
             # ======================================
