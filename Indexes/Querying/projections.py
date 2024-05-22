@@ -1,7 +1,7 @@
 from ravendb import AbstractIndexCreationTask, QueryData
 from ravendb.documents.indexes.definitions import FieldStorage
 
-from examples_base import ExampleBase, Employee, Order
+from examples_base import ExampleBase, Employee, Order, Company
 
 
 # region indexes_1
@@ -205,3 +205,41 @@ class Projections(ExampleBase):
                     Total,
                 )
                 # endregion
+
+                # region selectfields_1
+                fields = ["Name", "Phone"]
+                results = list(
+                    session.advanced.document_query_from_index_type(Companies_ByContact, Company).select_fields(
+                        ContactDetails, fields
+                    )
+                )
+                # endregion
+
+                # region selectfields_2
+                results = list(
+                    session.advanced.document_query_from_index_type(Companies_ByContact, Company).select_fields(
+                        ContactDetails
+                    )
+                )
+                # endregion
+
+
+# region index_10
+class Companies_ByContact(AbstractIndexCreationTask):
+    def __init__(self):
+        super().__init__()
+        self.map = "companies.Select(x => new {name = x.Contact.Name, phone = x.Phone})"
+        self._store_all_fields(FieldStorage.YES)  # Name and Phone fields can be retrieved directly from index
+
+
+# endregion
+
+
+# region projections_10_class
+class ContactDetails:
+    def __init__(self, name: str = None, phone: str = None):
+        self.name = name
+        self.phone = phone
+
+
+# endregion
