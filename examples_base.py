@@ -18,6 +18,27 @@ from ravendb.tools.utils import Utils
 from ravendb_embedded import EmbeddedServer, ServerOptions
 
 
+class User:
+    def __init__(self, Id: str = None, name: str = None, age: int = None):
+        self.Id = Id
+        self.name = name
+        self.age = age
+
+    def to_json(self) -> Dict[str, Any]:
+        return {
+            "Id": self.Id,
+            "Name": self.name,
+            "Age": self.age,
+        }
+
+    @classmethod
+    def from_json(cls, json_dict: Dict[str, Any]) -> User:
+        return cls(
+            name=json_dict["Name"],
+            age=json_dict["Age"],
+        )
+
+
 class Product(RavenProduct):
     def to_json(self) -> Dict[str, Any]:
         return {
