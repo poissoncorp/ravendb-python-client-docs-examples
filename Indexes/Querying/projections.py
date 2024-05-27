@@ -1,7 +1,13 @@
-from ravendb import AbstractIndexCreationTask, QueryData
+from enum import Enum
+from typing import Optional, Type, TypeVar, List, Union
+
+from ravendb import AbstractIndexCreationTask, QueryData, DocumentQuery, ProjectionBehavior
 from ravendb.documents.indexes.definitions import FieldStorage
+from ravendb.documents.session.tokens.query_tokens.definitions import DeclareToken, LoadToken
 
 from examples_base import ExampleBase, Employee, Order, Company
+
+_TProjection = TypeVar("_TProjection")
 
 
 # region indexes_1
@@ -241,5 +247,46 @@ class ContactDetails:
         self.name = name
         self.phone = phone
 
+    # endregion
 
-# endregion
+    # region syntax_select_fields
+    def select_fields(
+        self,
+        projection_class: Type[_TProjection],
+        *fields: str,
+        projection_behavior: Optional[ProjectionBehavior] = ProjectionBehavior.DEFAULT,
+    ) -> DocumentQuery[_TProjection]: ...
+
+    def select_fields_query_data(
+        self, projection_class: Type[_TProjection], query_data: QueryData
+    ) -> DocumentQuery[_TProjection]: ...
+
+    class QueryData:
+        def __init__(
+            self,
+            fields: List[str],
+            projections: List[str],
+            from_alias: Optional[str] = None,
+            declare_tokens: Optional[List[DeclareToken]] = None,
+            load_tokens: Optional[List[LoadToken]] = None,
+            is_custom_function: Optional[bool] = None,
+        ):
+            self.fields = fields
+            self.projections = projections
+            self.from_alias = from_alias
+            self.declare_tokens = declare_tokens
+            self.load_tokens = load_tokens
+            self.is_custom_function = is_custom_function
+
+            self.map_reduce: Union[None, bool] = None
+            self.project_into: Union[None, bool] = None
+            self.projection_behavior: Union[None, ProjectionBehavior] = None
+
+    class ProjectionBehavior(Enum):
+        DEFAULT = "Default"
+        FROM_INDEX = "FromIndex"
+        FROM_INDEX_OR_THROW = "FromIndexOrThrow"
+        FROM_DOCUMENT = "FromDocument"
+        FROM_DOCUMENT_OR_THROW = "FromDocumentOrThrow"
+
+    # endregion
