@@ -1,7 +1,7 @@
 import logging
 from concurrent.futures import Future
-from datetime import timedelta
-from typing import Optional, Type, TypeVar, Callable, Any
+from datetime import timedelta, datetime
+from typing import Optional, Type, TypeVar, Callable, Any, Dict, List
 
 from ravendb import DocumentStore
 from ravendb.documents.session.loaders.include import SubscriptionIncludeBuilder
@@ -23,7 +23,7 @@ from ravendb.exceptions.exceptions import (
     SubscriptionInUseException,
 )
 
-from examples_base import Order, ExampleBase
+from examples_base import Order, ExampleBase, Company
 
 _T = TypeVar("_T")
 
@@ -458,6 +458,7 @@ class SubscriptionExamples(ExampleBase):
             _ = worker_w_batch.run(
                 process_documents=lambda batch: ...
             )  # Pass your method that takes SubscriptionBatch[_T] as an argument, with your logic in it
+
             # endregion
 
             # region throw_during_user_logic
@@ -537,3 +538,175 @@ class SubscriptionExamples(ExampleBase):
                 finally:
                     subscription_worker.__exit__()
             # endregion
+            # todo reeb: skipped 'options.ConnectionStreamTimeout = TimeSpan.FromSeconds(45);' - not implemented yet
+
+            # region worker_timeout
+            options = SubscriptionWorkerOptions(subscription_name)
+
+            subscription_worker = store.subscriptions.get_subscription_worker(options, Order)
+
+            try:
+                subscription_worker.add_on_subscription_connection_retry(
+                    lambda exception: logger.error(
+                        f"Error during subscription processing: {subscription_name}", exc_info=exception
+                    )
+                )
+
+                subscription_worker.run(lambda batch: [... for item in batch.items])
+
+                # Run will complete normally if you have disposed the subscription
+                return
+            except Exception as e:
+                logger.error(f"Error during subscription process: {subscription_name}", exc_info=e)
+            finally:
+                subscription_worker.__exit__()
+            # endregion
+
+        subs_id = store.subscriptions.create_for_class(
+            Order,
+            SubscriptionCreationOptions(
+                query="""
+                declare function getOrderLinesTotal(doc){
+                    var total = 0;
+                    for (var i in doc.Lines) { 
+                        total += (doc.Lines[i].PricePerUnit * doc.Lines[i].Quantity);
+                    }
+                    return total;
+                }
+
+                From Orders as o
+                Where getOrderLinesTotal(o) > 10000
+                Select 
+                {
+                    order_id: id(o),
+                    company: this.LoadDocument(o.Company, "Companies"))                            
+                }
+                """
+            ),
+        )
+
+        class OrderAndCompany:
+            def __init__(self, order_id: str = None, company: Company = None):
+                self.order_id = order_id
+                self.company = company
+
+            @classmethod
+            def from_json(cls, json_dict: Dict[str, Any]):
+                return cls(json_dict["order_id"], Company.from_json(json_dict["company"]))
+
+        send_thank_you_note_to_employee = lambda x: ...
+        # region single_run
+        high_value_orders_worker = store.subscriptions.get_subscription_worker(
+            SubscriptionWorkerOptions(
+                subs_id,
+                # Here we ask the worker to stop when there are no documents left to send.
+                # Will throw SubscriptionClosedException when it finishes its job
+                close_when_no_docs_left=True,
+            ),
+            OrderAndCompany,
+        )
+
+        try:
+
+            def _subscription_batch_callback(batch: SubscriptionBatch[OrderAndCompany]):
+                for item in batch.items:
+                    send_thank_you_note_to_employee(item.result)
+
+            high_value_orders_worker.run(_subscription_batch_callback)
+        except SubscriptionClosedException:
+            # that's expected
+            ...
+        # endregion
+        raise_notification = lambda x: ...
+        # region dynamic_worker
+        subscription_name = "My dynamic subscription"
+        store.subscriptions.create_for_class(
+            Order,
+            SubscriptionCreationOptions(
+                subscription_name,
+                query="""
+                From Orders as o
+                Select 
+                {
+                    dynamic_field_1: "Company: " + o.Company + " Employee: " + o.Employee,
+                }
+                """,
+            ),
+        )
+
+        subscription_worker = store.subscriptions.get_subscription_worker(subscription_name)
+
+        def _raise_notification_callback(batch: SubscriptionBatch[Order]):
+            for item in batch.items:
+                raise_notification(item.result.dynamic_field_1)
+
+        _ = subscription_worker.run(_raise_notification_callback)
+
+        # endregion
+        transfer_order_to_shipment_company = lambda x: ...
+        # region subscription_with_open_session_usage
+        subscription_name = store.subscriptions.create_for_options(
+            SubscriptionCreationOptions(query="from Orders as o where o.ShippedAt = null")
+        )
+
+        subscription_worker = store.subscriptions.get_subscription_worker_by_name(subscription_name, Order)
+
+        def _transfer_order_callback(batch: SubscriptionBatch[Order]):
+            with batch.open_session() as session:
+                for order in (item.result for item in batch.items):
+                    transfer_order_to_shipment_company(order)
+                    order.shipped_at = datetime.utcnow()
+
+                # we know that we have at least one order to ship,
+                # because the subscription query above has that in it's WHERE clause
+                session.save_changes()
+
+        _ = subscription_worker.run(_transfer_order_callback)
+        # endregion
+
+        # region waitforfree
+        worker = store.subscriptions.get_subscription_worker(
+            SubscriptionWorkerOptions(subscription_name, strategy=SubscriptionOpeningStrategy.WAIT_FOR_FREE), Order
+        )
+        # endregion
+        """
+        # region waiting_subscription_1
+        primary_worker = store.subscriptions.get_subscription_worker(SubscriptionWorkerOptions(subscription_name, strategy=SubscriptionOpeningStrategy.TAKE_OVER), Order)
+        
+        while True:
+            try:
+                run_future = primary_worker.run(lambda batch: ...) # your logic
+            except Exception:
+                ... # retry
+        # endregion
+        
+        # region waiting_subscription_2
+        secondary_worker = store.subscriptions.get_subscription_worker(SubscriptionWorkerOptions(subscription_name), strategy=SubscriptionOpeningStrategy.WAIT_FOR_FREE)
+        
+        while True:
+            try:
+                run_future = secondary_worker.run(lambda batch: ...) # your logic
+            except Exception:
+                ... # retry
+        # endregion
+        """
+
+        # todo reeb: no subscriptions.open(), skipped
+        # todo reeb: no release() and open()
+
+        # region get_subscriptions_1
+        def get_subscriptions(
+            self, start: int, take: int, database: Optional[str] = None
+        ) -> List[SubscriptionState]: ...
+
+        # endregion
+        # region delete_1
+        def delete(self, name: str, database: Optional[str] = None) -> None: ...
+
+        # endregion
+
+        # todo reeb: i only have one event out of these 4
+
+        # region events
+        self._after_acknowledgment: List[Callable[[SubscriptionBatch[_T]], None]] = []
+        # endregion
