@@ -22,6 +22,7 @@ from ravendb.exceptions.exceptions import (
     SubscriberErrorException,
     SubscriptionInUseException,
 )
+from ravendb.serverwide.operations.common import DeleteDatabaseOperation
 
 from examples_base import Order, ExampleBase, Company
 
@@ -99,12 +100,12 @@ class Foo:
     # endregion
 
     # region subscriptionWorkerRunning
-    def run(self, process_documents: Optional[Callable[[SubscriptionBatch[_T]], Any]]) -> Future[None]: ...
+    def run(self, process_documents: Optional[Callable[[SubscriptionBatch[_T]], Any]]) -> Future: ...
 
     # endregion
 
     # region subscriptions_example
-    def worker(self, store: DocumentStore) -> Future[None]:
+    def worker(self, store: DocumentStore) -> Future:
         subscription_name = store.subscriptions.create_for_class(
             Order, SubscriptionCreationOptions(query="from Orders where Company = " "")
         )
@@ -127,6 +128,11 @@ class Foo:
 class SubscriptionExamples(ExampleBase):
     def setUp(self):
         super().setUp()
+
+    def tearDown(self):
+        with self.embedded_server.get_document_store("Manager") as store:
+            parameters = DeleteDatabaseOperation.Parameters(["SubscriptionsExamples"], True)
+            store.maintenance.server.send(DeleteDatabaseOperation(parameters=parameters))
 
     def test_subscriptions(self):
         with self.embedded_server.get_document_store("SubscriptionsExamples") as store:
@@ -157,8 +163,8 @@ class SubscriptionExamples(ExampleBase):
                         "    for (var i in doc.Lines) { sum += doc.Lines[i]; }"
                         "    return sum;"
                         "}"
-                        "From Orders as o"
-                        "Where getOrderLinesSum(o) > 100"
+                        "From Orders as o "
+                        "Where getOrderLinesSum(o) > 100 "
                     )
                 ),
             )
@@ -236,7 +242,7 @@ class SubscriptionExamples(ExampleBase):
 
                     From Orders as o 
                     Where getOrderLinesSum(o) > 100
-                    Select projectOrder(o)"
+                    Select projectOrder(o)
                     """
                 )
             )
@@ -264,12 +270,12 @@ class SubscriptionExamples(ExampleBase):
                         return sum;
                     }
 
-                    From Orders (Revisions = true)
-                    Where getOrderLinesSum(this.Current)  > getOrderLinesSum(this.Previous)
+                    From Orders (Revisions = true) as o
+                    Where getOrderLinesSum(o.Current)  > getOrderLinesSum(o.Previous)
                     Select 
                     {
-                        previous_revenue: getOrderLinesSum(this.Previous),
-                        current_revenue: getOrderLinesSum(this.Current)                            
+                        previous_revenue: getOrderLinesSum(o.Previous),
+                        current_revenue: getOrderLinesSum(o.Current)                            
                     }
                     """
                 )
@@ -287,7 +293,7 @@ class SubscriptionExamples(ExampleBase):
 
             revenues_comparison_worker.run(_revenues_callback)
             # endregion
-
+            """
             # region consumption_0
             subscription_name = store.subscriptions.create_for_class(
                 Order, SubscriptionCreationOptions(query='From Orders Where Company = "companies/11"')
@@ -301,8 +307,9 @@ class SubscriptionExamples(ExampleBase):
 
             subscription_task = subscription.run(_orders_callback)
 
-            subscription_task.result()  # Optionally, set a timeout, or wrap it in an asyncio.Future
+            subscription_task.result()  # Optionally wrap it in an asyncio.Future
             # endregion
+            """
             # region open_1
             subscription = store.subscriptions.get_subscription_worker_by_name(name, Order)
             # endregion
