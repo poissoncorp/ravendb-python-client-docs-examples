@@ -1,4 +1,5 @@
 import logging
+import time
 from concurrent.futures import Future
 from datetime import timedelta, datetime
 from typing import Optional, Type, TypeVar, Callable, Any, Dict, List
@@ -403,6 +404,7 @@ class SubscriptionExamples(ExampleBase):
 
             # endregion
             """
+
             # region interface_subscription_deletion
             def delete(self, name: str, database: Optional[str] = None) -> None: ...
 
@@ -678,6 +680,23 @@ class SubscriptionExamples(ExampleBase):
                     session.save_changes()
 
             _ = subscription_worker.run(_transfer_order_callback)
+            # endregion
+
+            # region subscription_with_includes_path_usage
+            subscription_name = store.subscriptions.create_for_options(
+                SubscriptionCreationOptions(query="from Orders include Lines[].Product")
+            )
+            subscription_worker = store.subscriptions.get_subscription_worker_by_name(subscription_name, Order)
+
+            def _callback(batch: SubscriptionBatch[Order]):
+                with batch.open_session() as session:
+                    for order in (item.result for item in batch.items):
+                        for order_line in order.lines:
+                            # this line won't generate a new request, because orderLine.Product was included
+                            product = session.load(order_line.product)
+                            raise_notification(order, product)
+
+            _ = subscription_worker.run(_callback)
             # endregion
 
             # region waitforfree
