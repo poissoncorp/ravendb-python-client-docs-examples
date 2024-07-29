@@ -95,12 +95,20 @@ class Company(RavenCompany):
     def from_json(cls, json_dict: Dict[str, Any]) -> Company:
         return cls(
             json_dict["Id"] if "Id" in json_dict else None,
-            json_dict["ExternalId"],
-            json_dict["Name"],
-            Contact.from_json(json_dict["Contact"]),
-            Address.from_json(json_dict["Address"]),
-            json_dict["Phone"],
-            json_dict["Fax"],
+            json_dict["ExternalId"] if "ExternalId" in json_dict else None,
+            json_dict["Name"] if "Name" in json_dict else None,
+            (
+                Contact.from_json(json_dict["Contact"])
+                if "Contact" in json_dict and json_dict["Contact"] is not None
+                else None
+            ),
+            (
+                Address.from_json(json_dict["Address"])
+                if "Address" in json_dict and json_dict["Address"] is not None
+                else None
+            ),
+            json_dict["Phone"] if "Phone" in json_dict else None,
+            json_dict["Fax"] if "Fax" in json_dict else None,
         )
 
 
@@ -280,6 +288,7 @@ class ExampleBase(TestCase):
 
     @staticmethod
     def add_companies(session: DocumentSession):
+        session.store(Company("companies/3", name="Stonks.", address=Address(city="Austin", country="USA")))
         session.store(Company("companies/1", name="Stonks Ltd.", address=Address(city="Bristol", country="UK")))
         session.store(
             Company(
