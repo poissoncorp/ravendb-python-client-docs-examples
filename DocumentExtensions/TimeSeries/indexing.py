@@ -6,9 +6,165 @@ from ravendb.documents.indexes.time_series import (
     TimeSeriesIndexDefinitionBuilder,
     AbstractTimeSeriesIndexCreationTask,
     AbstractMultiMapTimeSeriesIndexCreationTask,
+    AbstractJavaScriptTimeSeriesIndexCreationTask,
 )
 
 from examples_base import ExampleBase
+
+
+# todo reeb: in Python i can only pass index map as string - can't code it directly - so example below can be used both for idnex_1 and index_2 regions
+# region index_1
+class StockPriceTimeSeriesFromCompanyCollection(AbstractTimeSeriesIndexCreationTask):
+    # The index-entry:
+    # ================
+    class IndexEntry:
+        def __init__(
+            self, trade_volume: float = None, date: datetime = None, company_id: str = None, employee_name: str = None
+        ):
+            # The index-fields:
+            # =================
+            self.trade_volume = trade_volume
+            self.date = date
+            self.company_id = company_id
+            self.employee_name = employee_name
+
+    def __init__(self):
+        super().__init__()
+        self.map = """
+        from segment in timeSeries.Companies.StockPrices
+        from entry in segment.Entries
+        
+        let employee = LoadDocument(entry.Tag, "Employees")
+        
+        select new
+        {
+            trade_volume = entry.Values[4],
+            date = entry.Timestamp.Date,
+            company_id = segment.DocumentId,
+            employee_name = employee.FirstName + " " + employee.LastName
+        }
+        """
+
+
+# endregion
+# region index_3
+class StockPriceTimeSeriesFromCompanyCollection_JS(AbstractJavaScriptTimeSeriesIndexCreationTask):
+    def __init__(self):
+        super().__init__()
+        self.maps = {
+            """
+            timeSeries.map('Companies', 'StockPrices', function (segment) {
+
+                return segment.Entries.map(entry => {
+                    let employee = load(entry.Tag, 'Employees');
+
+                    return {
+                        trade_volume: entry.Values[4],
+                        date: new Date(entry.Timestamp.getFullYear(),
+                                       entry.Timestamp.getMonth(),
+                                       entry.Timestamp.getDate()),
+                        company_id: segment.DocumentId,
+                        employee_name: employee.FirstName + ' ' + employee.LastName
+                    };
+                });
+            })
+            """
+        }
+
+
+# endregion
+
+# todo reeb: i don't have 'AddMapForAll', left those regions empty
+# region index_4
+# endregion
+# region index_5
+# endregion
+
+
+# region index_6
+class Vechicles_ByLocation(AbstractMultiMapTimeSeriesIndexCreationTask):
+    class IndexEntry:
+        def __init__(
+            self, latitude: float = None, longitude: float = None, date: datetime = None, document_id: str = None
+        ):
+            self.latitude = latitude
+            self.longitude = longitude
+            self.date = date
+            self.document_id = document_id
+
+    def __init__(self):
+        super().__init__()
+        self._add_map(
+            """
+            from segment in timeSeries.Planes.GPS_Coordinates
+            from entry in segment.Entries
+            select new
+            {
+                latitude = entry.Values[0],
+                longitude = entry.Values[1],
+                date = entry.Timestamp.Date,
+                document_id = segment.DocumentId
+            }
+            """
+        )
+        self._add_map(
+            """
+            from segment in timeSeries.Ships.GPS_Coordinates
+            from entry in segment.Entries
+            select new
+            {
+                latitude = entry.Values[0],
+                longitude = entry.Values[1],
+                date = entry.Timestamp.Date,
+                document_id = segment.DocumentId
+            }
+            """
+        )
+
+
+# endregion
+
+
+# region index_7
+class TradeVolume_PerDay_ByCountry(AbstractTimeSeriesIndexCreationTask):
+    class Result:
+        def __init__(self, total_trade_volume: float = None, date: datetime = None, country: str = None):
+            self.total_trade_volume = total_trade_volume
+            self.date = date
+            self.country = country
+
+    def __init__(self):
+        super().__init__()
+        # Define the Map part:
+        self.map = """
+        from segment in timeSeries.Companies.StockPrices
+        from entry in segment.Entries
+        
+        let company = LoadDocument(segment.DocumentId, 'Companies')
+        
+        select new
+        {
+            date = entry.Timestamp.Date,
+            country = company.Address.Country,
+            total_trade_volume = entry.Values[4],
+        }
+        """
+
+        # Define the Reduce part:
+        self._reduce = """
+        from r in results
+        group r by new {r.date, r.country}
+        into g
+        select new 
+        {
+            date = g.Key.date,
+            country = g.Key.country,
+            total_trade_volume = g.Sum(x => x.total_trade_volume)
+        }
+        """
+
+
+# endregion
 
 
 class Indexing(ExampleBase):
@@ -17,90 +173,84 @@ class Indexing(ExampleBase):
 
     def test_indexing(self):
         with self.embedded_server.get_document_store("IndexingTimeSeriesData") as store:
-            # region indexes_IndexDefinition
-            ts_index_definition = TimeSeriesIndexDefinition(
-                "Stocks_ByTradeVolume",
+            # region index_definition_1
+            # Define the 'index definition'
+            index_definition = TimeSeriesIndexDefinition(
+                name="StockPriceTimeSeriesFromCompanyCollection",
                 maps={
-                    "from ts in timeSeries.Companies.StockPrice "
-                    "from entry in ts.Entries "
-                    "select new { TradeVolume = entry.Values[4], entry.Timestamp.Date }"
+                    """
+                    from segment in timeSeries.Companies.StockPrices 
+                    from entry in segment.Entries 
+
+                    let employee = LoadDocument(entry.Tag, "Employees")
+
+                    select new 
+                    { 
+                        trade_volume = entry.Values[4], 
+                        date = entry.Timestamp.Date,
+                        company_id = segment.DocumentId,
+                        employee_name = employee.FirstName + ' ' + employee.LastName 
+                    }
+                    """
                 },
             )
 
-            store.maintenance.send(PutIndexesOperation(ts_index_definition))
+            # Deploy the index to the server via 'PutIndexesOperation'
+            store.maintenance.send(PutIndexesOperation(index_definition))
             # endregion
 
-            # region indexes_IndexDefinitionBuilder
-            ts_index_def_builder = TimeSeriesIndexDefinitionBuilder("Stocks_ByTradeVolume")
-            ts_index_def_builder.map = (
-                "from ts in timeSeries.Companies.StockPrice "
-                "from entry in ts.Entries "
-                "select new { TradeVolume = entry.Values[4], entry.Timestamp.Date }"
-            )
-            store.maintenance.send(PutIndexesOperation(ts_index_def_builder.to_index_definition(store.conventions)))
+            # region index_definition_2
+            # Create the index builder
+            ts_index_def_builder = TimeSeriesIndexDefinitionBuilder("StockPriceTimeSeriesFromCompanyCollection")
+
+            ts_index_def_builder.map = """
+                from segment in timeSeries.Companies.StockPrices
+                from entry in segment.Entries
+                select new 
+                {
+                    trade_volume = entry.Values[4],
+                    date = entry.Timestamp.Date,
+                    company_id = segment.DocumentId,
+                }
+            """
+            # Build the index definition
+            index_definition_from_builder = ts_index_def_builder.to_index_definition(store.conventions)
+
+            # Deploy the index to the server via 'PutIndexesOperation'
+            store.maintenance.send(PutIndexesOperation(index_definition_from_builder))
             # endregion
 
-    # region indexes_CreationTask
-    class Stocks_ByTradeVolume(AbstractTimeSeriesIndexCreationTask):
-        def __init__(self):
-            super().__init__()
-            self.map = (
-                "from ts in timeSeries.Companies.StockPrice "
-                "from entry in ts.Entries "
-                "select new { TradeVolume = entry.Values[4], entry.Timestamp.Date }"
-            )
+            # region query_1
+            with store.open_session() as session:
+                # Retrieve time series data for the specified company:
+                # ====================================================
+                results = list(
+                    session.query_index_type(
+                        StockPriceTimeSeriesFromCompanyCollection, StockPriceTimeSeriesFromCompanyCollection.IndexEntry
+                    ).where_equals("company_id", "Companies/91-A")
+                )
 
-    # endregion
+                # Results will include data from all 'StockPrices' entries in document 'Companies/91-A'
+            # endregion
 
-    # region indexes_MultiMapCreationTask
-    class Vehicles_ByLocation(AbstractMultiMapTimeSeriesIndexCreationTask):
-        def __init__(self):
-            super().__init__()
-            self._add_map(
-                "from ts in timeSeries.Planes.GPS_Coordinates "
-                "from entry in ts.Entries "
-                "select new { Latitude = entry.Values[0], Longitude = entry.Values[1], entry.Timestamp }"
-            )
+            # region query_2
+            with store.open_session() as session:
+                # Find what companies had a very high trade volume:
+                # =================================================
+                results = list(
+                    session.query_index_type(
+                        StockPriceTimeSeriesFromCompanyCollection, StockPriceTimeSeriesFromCompanyCollection.IndexEntry
+                    )
+                    .where_greater_than_or_equal("trade_volume", 150_000_000)
+                    .select_fields(OnlyCompanyName, "company_id")
+                    .distinct()
+                )
 
-            self._add_map(
-                "from ts in timeSeries.Ships.GPS_Coordinates "
-                "from entry in ts.Entries "
-                "select new { Latitude = entry.Values[0], Longitude = entry.Values[1], entry.Timestamp"
-            )
+                # Results will contain company "Companies/65-A"
+                # since it is the only company with time series entries having such high trade volume.
+            # endregion
 
-    # endregion
 
-    # region indexes_MapReduce
-    class TradeVolume_PerDay_ByCountry(AbstractTimeSeriesIndexCreationTask):
-        class Result:
-            def __init__(self, trade_volume: float = None, date: datetime = None, country: str = None):
-                self.trade_volume = trade_volume
-                self.date = date
-                self.country = country
-
-        def __init__(self):
-            super().__init__()
-            self.map = (
-                "from ts in timeSeries.Companies.StockPrice "
-                'let company = this.LoadDocument(ts.DocumentId, "Companies") '
-                "from entry in ts.Entries "
-                "select new "
-                "{"
-                "    trade_volume = entry.Values[4],"
-                "    date = entry.Timestamp.Date,"
-                "    country = entry.Address.Country "
-                "}"
-            )
-
-            self.reduce = (
-                "from r in results "
-                "group r by new { r.Date, r.Country} into g "
-                "select new "
-                "{"
-                "    trade_volume = g.Sum(x => x.trade_volume),"
-                "    date = g.Key.Date,"
-                "    country = g.Key.Country"
-                "}"
-            )
-
-    # endregion
+class OnlyCompanyName:
+    def __init__(self, company_id: str = None):
+        self.name = company_id
